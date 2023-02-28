@@ -6,8 +6,6 @@ from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 
-from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
-    EricTheEvil, TitForTwoTats, GrimTrigger, Stephanie
 from utils import AgentState, Decision, Agent, play_iterated_prisoners_dilemma
 
 
@@ -145,7 +143,7 @@ def evaluate_population(population, expected_number_of_interactions, best_agent)
     #     agg_results[-1][1] = round(agg_results[-1][1], 2)
 
     agg_results = []
-    for i, agent_name in enumerate(agent_names + opponent_names):
+    for i, agent_name in enumerate(agent_names):
         agg_result = [agent_name, 0]
         for result in results:
             if result[0] == agent_name:
@@ -209,7 +207,7 @@ def genetic_algorithm():
     output_dir = '/home/nburn42/ipd_output/self_play/'
 
     # Initialize population
-    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(500)]
+    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(25)]
 
     best = population[0]
     # Evaluate population
