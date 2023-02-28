@@ -94,11 +94,6 @@ class Nathan(Agent):
         p_count += len(second_layer)
 
         defect_chance += third_layer * self.genes[p_count]
-        print(p_count, defect_chance)
-
-        # check if defect chance is nan
-        if defect_chance != defect_chance:
-            raise Exception('nan')
 
         return self.weighted_choice(defect_chance), self.genes
 
@@ -220,7 +215,7 @@ def genetic_algorithm():
     output_dir = '/home/nathan/ipd_output/overwork1/'
 
     # Initialize population
-    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(10)]
+    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(500)]
 
     best = population[0]
     # Evaluate population
@@ -237,7 +232,7 @@ def genetic_algorithm():
         population = breed(population, ii)
         # Evaluate population
         evaluate_population(population, (500.0 * random.random()) + 50, best)
-        ii += 50
+        ii += len(population)
         best = max(population, key=lambda x: x.fitness)
 
         print('Generation: {}'.format(ii))
