@@ -74,7 +74,7 @@ class Nathan(Agent):
         return self.weighted_choice(defectChance), previous_state
 
 
-def evaluate_population(population):
+def evaluate_population(population, expected_number_of_interactions):
     """ Evaluate population """
     agents = []
     agent_names = []
@@ -92,7 +92,6 @@ def evaluate_population(population):
     results = []
     agg_results = []
 
-    expected_number_of_interactions = (2000.0 * random.random()) + 50
     for first_agent, agent_name in zip(agents, agent_names):
         results.append([])
         agg_results.append([agent_name, 0])
@@ -167,7 +166,7 @@ def genetic_algorithm():
     # Initialize population
     population = [Nathan(0.1 * (np.random.rand(50) - 0.5), i) for i in range(100)]
     # Evaluate population
-    evaluate_population(population)
+    evaluate_population(population, 50)
     # Repeat until termination condition met
 
     best_chart = []
@@ -179,7 +178,7 @@ def genetic_algorithm():
         # Breed next generation
         population = breed(population, ii)
         # Evaluate population
-        evaluate_population(population)
+        evaluate_population(population, (2000.0 * random.random()) + 50)
         ii += 50
         best = max(population, key=lambda x: x.fitness)
 
