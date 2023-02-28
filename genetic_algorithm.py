@@ -1,4 +1,5 @@
 import json
+import multiprocessing
 import random
 from typing import Tuple
 
@@ -36,45 +37,63 @@ class Nathan(Agent):
             other_agents_decisions: Tuple[Decision, ...],
             previous_state: AgentState,
     ) -> Tuple[Decision, AgentState]:
-        defectChance = previous_state[0]
+        defectChance = self.genes[0]
         num_rounds = len(other_agents_decisions)
 
         if num_rounds == 0:
-            return self.weighted_choice(defectChance), previous_state
+            return self.weighted_choice(defectChance), self.genes
 
         history = [d == Decision.DEFECT for d in other_agents_decisions]
 
+        total_defections = sum(history)
         average = np.average(history)
-        weighted_average = np.average(history, weights=np.arange(1, num_rounds + 1) * previous_state[1])
-        recent_defects = np.sum(history[:int(100 * previous_state[2])])
+        weighted_average = np.average(history, weights=np.arange(1, num_rounds + 1) * self.genes[1])
+        recent_defect_window = int(100 * self.genes[2])
+        recent_average = np.average(history[:recent_defect_window])
         last_defect = history[0]
 
-        if average > previous_state[3]:
-            defectChance += previous_state[4] + (average * previous_state[5]) + (weighted_average * previous_state[6]) + (
-                    recent_defects * previous_state[7]) + (last_defect * previous_state[8])
-        if average > previous_state[9]:
-            defectChance += previous_state[10] + (average * previous_state[11]) + (weighted_average * previous_state[12]) + (
-                    recent_defects * previous_state[13]) + (last_defect * previous_state[14])
-        if average > previous_state[15]:
-            defectChance += previous_state[16] + (average * previous_state[17]) + (weighted_average * previous_state[18]) + (
-                    recent_defects * previous_state[19]) + (last_defect * previous_state[20])
-        if weighted_average > previous_state[21]:
-            defectChance += previous_state[22] + (average * previous_state[23]) + (weighted_average * previous_state[24]) + (
-                    recent_defects * previous_state[25]) + (last_defect * previous_state[26])
-        if weighted_average > previous_state[27]:
-            defectChance += previous_state[28] + (average * previous_state[29]) + (weighted_average * previous_state[30]) + (
-                    recent_defects * previous_state[31]) + (last_defect * previous_state[32])
-        if recent_defects / 100 > previous_state[33]:
-            defectChance += previous_state[34] + (average * previous_state[35]) + (weighted_average * previous_state[36]) + (
-                    recent_defects * previous_state[37]) + (last_defect * previous_state[38])
-        if last_defect:
-            defectChance += previous_state[39] + (average * previous_state[40]) + (weighted_average * previous_state[41]) + (
-                    recent_defects * previous_state[42]) + (last_defect * previous_state[43])
+        first_layer = np.array([num_rounds, total_defections, average, weighted_average, recent_average, last_defect])
 
-        return self.weighted_choice(defectChance), previous_state
+        def neuron(features, params_offset):
+            value = sum(features * self.genes[params_offset:params_offset + 6])
+            if value > self.genes[params_offset + 6]:
+                return value
+            return 0
+
+        second_layer = np.array([
+            neuron(first_layer, 3),
+            neuron(first_layer, 9),
+            neuron(first_layer, 15),
+            neuron(first_layer, 21),
+            neuron(first_layer, 27),
+            neuron(first_layer, 33),
+        ])
+
+        defectChance += neuron(first_layer, 3) * self.genes[40]
+        defectChance += neuron(first_layer, 8) * self.genes[41]
+        defectChance += neuron(first_layer, 13) * self.genes[42]
+        defectChance += neuron(first_layer, 18) * self.genes[43]
+        defectChance += neuron(first_layer, 23) * self.genes[44]
+        defectChance += neuron(first_layer, 28) * self.genes[45]
+
+        defectChance += neuron(second_layer, 33) * self.genes[46]
+
+        return self.weighted_choice(defectChance), self.genes
 
 
-def evaluate_population(population, expected_number_of_interactions):
+def evaluate_agent(name, agent, opponents, expected_number_of_interactions):
+    results = []
+    for opponent in opponents:
+        match = play_iterated_prisoners_dilemma(
+            agent_1=agent,
+            agent_2=opponent,
+            expeted_number_of_interactions=expected_number_of_interactions,
+        )
+        results.append(match)
+    return (name, sum([result[0] for result in results]))
+
+
+def evaluate_population(population, expected_number_of_interactions, best_agent):
     """ Evaluate population """
     agents = []
     agent_names = []
@@ -83,37 +102,50 @@ def evaluate_population(population, expected_number_of_interactions):
         agents.append(nathan)
         agent_names.append(nathan.get_name())
 
-    agents += [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
-              PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
-              Stephanie()]
-    agent_names += ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
-                   'Forgiver', 'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie']
+    opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
+               PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
+               Stephanie(), best_agent]
+    opponent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
+                   'Forgiver', 'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie',
+                   best_agent.get_name() + ' best']
 
-    results = []
+    with multiprocessing.Pool() as pool:
+        results = pool.starmap(evaluate_agent,
+                               [(name, agent, opponents, expected_number_of_interactions) for agent, name in
+                                zip(agents + opponents, agent_names + opponent_names)])
+
     agg_results = []
 
-    for first_agent, agent_name in zip(agents, agent_names):
-        results.append([])
-        agg_results.append([agent_name, 0])
-        # if "Nathan" not in agent_name:
-        #     continue
-        for opponent in agents:
-            match = play_iterated_prisoners_dilemma(
-                agent_1=first_agent,
-                agent_2=opponent,
-                expeted_number_of_interactions=expected_number_of_interactions,
-            )
-            results[-1].append(match)
-            agg_results[-1][1] = agg_results[-1][1] + results[-1][-1][0]
-        agg_results[-1][1] = round(agg_results[-1][1], 2)
+    # results = []
+
+    # for first_agent, agent_name in zip(agents, agent_names):
+    #     results.append([])
+    #     agg_results.append([agent_name, 0])
+    #     # if "Nathan" not in agent_name:
+    #     #     continue
+    #     for opponent in agents:
+    #         match = play_iterated_prisoners_dilemma(
+    #             agent_1=first_agent,
+    #             agent_2=opponent,
+    #             expeted_number_of_interactions=expected_number_of_interactions,
+    #         )
+    #         results[-1].append(match)
+    #         agg_results[-1][1] = agg_results[-1][1] + results[-1][-1][0]
+    #     agg_results[-1][1] = round(agg_results[-1][1], 2)
+
+    agg_results = []
+    for i, agent_name in enumerate(agent_names + opponent_names):
+        agg_result = [agent_name, 0]
+        for result in results:
+            if result[0] == agent_name:
+                agg_result[1] += result[1]
+        agg_result[1] = round(agg_result[1], 2)
+        agg_results.append(agg_result)
 
     # Set fitness
     for i in range(len(population)):
         population[i].set_fitness(agg_results[i][1])
-    # print(results)
     print(*sorted(agg_results, key=lambda x: x[1], reverse=True), sep='\n')
-    # df = pd.DataFrame(results, columns=agent_names, index=agent_names)
-    # print(df)
 
 
 def select(population):
@@ -138,7 +170,7 @@ def select(population):
     return winners
 
 
-def breed(population, ii, mutation_rate=0.01):
+def breed(population, ii, mutation_rate=0.25):
     """ Breed next generation """
     # Initialize next generation
     next_generation = []
@@ -153,7 +185,7 @@ def breed(population, ii, mutation_rate=0.01):
         parent2 = random.choice(population)
         parents = [parent1, parent2]
 
-        choice_values = np.random.randint(0, 2, 50)
+        choice_values = np.random.randint(0, 2, len(parents[0].genes))
         child_genes = np.zeros(len(parents[0].genes))
         for i in range(len(child_genes)):
             child_genes[i] = parents[choice_values[i]].genes[i] + np.random.normal(0, 1) * mutation_rate
@@ -164,9 +196,11 @@ def breed(population, ii, mutation_rate=0.01):
 def genetic_algorithm():
     """ Genetic algorithm """
     # Initialize population
-    population = [Nathan(0.2 * (np.random.rand(50) - 0.5), i) for i in range(100)]
+    population = [Nathan((np.random.rand(50) - 0.5), i) for i in range(10)]
+
+    best = population[0]
     # Evaluate population
-    evaluate_population(population, 50)
+    evaluate_population(population, 50, best)
     # Repeat until termination condition met
 
     best_chart = []
@@ -178,7 +212,7 @@ def genetic_algorithm():
         # Breed next generation
         population = breed(population, ii)
         # Evaluate population
-        evaluate_population(population, (2000.0 * random.random()) + 50)
+        evaluate_population(population, (500.0 * random.random()) + 50, best)
         ii += 50
         best = max(population, key=lambda x: x.fitness)
 
@@ -197,9 +231,6 @@ def genetic_algorithm():
         plt.plot(best_chart)
         plt.savefig('best_chart.png')
         plt.clf()
-
-
-
 
 
 if __name__ == '__main__':
