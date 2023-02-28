@@ -154,8 +154,8 @@ def breed(population, ii, mutation_rate=0.01):
         parents = [parent1, parent2]
 
         choice_values = np.random.randint(0, 2, 50)
-        child_genes = np.zeros(50)
-        for i in range(20):
+        child_genes = np.zeros(len(parents[0].genes))
+        for i in range(len(child_genes)):
             child_genes[i] = parents[choice_values[i]].genes[i] + np.random.normal(0, 1) * mutation_rate
         next_generation.append(Nathan(child_genes, ii + len(next_generation)))
     return next_generation
@@ -164,7 +164,7 @@ def breed(population, ii, mutation_rate=0.01):
 def genetic_algorithm():
     """ Genetic algorithm """
     # Initialize population
-    population = [Nathan(0.1 * (np.random.rand(50) - 0.5), i) for i in range(100)]
+    population = [Nathan(0.2 * (np.random.rand(50) - 0.5), i) for i in range(100)]
     # Evaluate population
     evaluate_population(population, 50)
     # Repeat until termination condition met
