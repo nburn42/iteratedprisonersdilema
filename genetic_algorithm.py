@@ -1,3 +1,4 @@
+import json
 import random
 from typing import Tuple
 
@@ -188,8 +189,8 @@ def genetic_algorithm():
         print('Best name: {}'.format(best.get_name()))
 
         # Save best solution
-        with open('best.npy', 'wb') as f:
-            np.save(f, best.genes)
+        with open('best.json', 'w') as f:
+            json.dump(best.genes.tolist(), f)
 
         best_chart.append(best.fitness)
 
