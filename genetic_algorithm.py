@@ -121,7 +121,7 @@ def evaluate_population(population, expected_number_of_interactions, best_agent,
 
     opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
                PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
-               Stephanie(), best_agent]
+               Stephanie(), best_agent, all_time_best_agent]
     opponent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
                    'Forgiver', 'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie',
                    best_agent.get_name() + ' best', all_time_best_agent.get_name() + ' all time best']
