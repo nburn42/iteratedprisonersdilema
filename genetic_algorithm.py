@@ -64,7 +64,7 @@ class Nathan(Agent):
         elif len(history) > 1:
             last_defect_2 = history[1]
 
-        first_layer = np.array([num_rounds, total_defections, average, weighted_average_1, weighted_average_2,
+        first_layer = np.array([min(num_rounds, 200), total_defections, average, weighted_average_1, weighted_average_2,
                                 recent_average_1, recent_average_2, last_defect_1, last_defect_2, last_defect_3,
                                 last_defect_4])
 
@@ -196,7 +196,7 @@ def breed(population, ii, mutation_rate=0.25):
     next_generation.append(max(population, key=lambda x: x.fitness))
 
     # Repeat until next generation is complete
-    while len(next_generation) < 20:
+    while len(next_generation) < 25:
         # Select parents
         parent1 = random.choice(population)
         parent2 = random.choice(population)
@@ -215,7 +215,7 @@ def genetic_algorithm():
     output_dir = '/home/nathan/ipd_output/overwork1/'
 
     # Initialize population
-    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(500)]
+    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(5000)]
 
     best = population[0]
     # Evaluate population
