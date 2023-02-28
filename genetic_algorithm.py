@@ -110,7 +110,7 @@ def evaluate_agent(name, agent, opponents, expected_number_of_interactions):
     return (name, sum([result[0] for result in results]))
 
 
-def evaluate_population(population, expected_number_of_interactions, best_agent):
+def evaluate_population(population, expected_number_of_interactions, best_agent, all_time_best_agent):
     """ Evaluate population """
     agents = []
     agent_names = []
@@ -124,7 +124,7 @@ def evaluate_population(population, expected_number_of_interactions, best_agent)
                Stephanie(), best_agent]
     opponent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
                    'Forgiver', 'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie',
-                   best_agent.get_name() + ' best']
+                   best_agent.get_name() + ' best', all_time_best_agent.get_name() + ' all time best']
 
     with multiprocessing.Pool() as pool:
         results = pool.starmap(evaluate_agent,
@@ -212,15 +212,15 @@ def breed(population, ii, mutation_rate=0.25):
 
 def genetic_algorithm():
     """ Genetic algorithm """
-    output_dir = '/home/nathan/ipd_output/overwork1/'
+    output_dir = '/home/nathan/ipd_output/overwork3/'
 
     # Initialize population
     population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(5000)]
 
     best = population[0]
-    # Evaluate population
-    evaluate_population(population, 50, best)
-    # Repeat until termination condition met
+    all_time_best = population[0]
+    all_time_best_fitness = 0
+    evaluate_population(population, 50, best, all_time_best)
 
     best_chart = []
 
@@ -231,18 +231,24 @@ def genetic_algorithm():
         # Breed next generation
         population = breed(population, ii)
         # Evaluate population
-        evaluate_population(population, (500.0 * random.random()) + 50, best)
+        evaluate_population(population, (500.0 * random.random()) + 50, best, all_time_best)
         ii += len(population)
         best = max(population, key=lambda x: x.fitness)
 
         print('Generation: {}'.format(ii))
         print('Best fitness: {}'.format(best.fitness))
-        print('Best genes: {}'.format(best.genes))
+        # print('Best genes: {}'.format(best.genes))
         print('Best name: {}'.format(best.get_name()))
 
         # Save best solution
         with open(output_dir + 'best.json', 'w') as f:
             json.dump(best.genes.tolist(), f)
+
+        if best.fitness > all_time_best_fitness:
+            all_time_best = best
+            all_time_best_fitness = best.fitness
+            with open(output_dir + f'all_time_best_{all_time_best_fitness}.json', 'w') as f:
+                json.dump(all_time_best.genes.tolist(), f)
 
         best_chart.append(best.fitness)
 
