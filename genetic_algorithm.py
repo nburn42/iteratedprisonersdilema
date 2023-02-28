@@ -37,48 +37,70 @@ class Nathan(Agent):
             other_agents_decisions: Tuple[Decision, ...],
             previous_state: AgentState,
     ) -> Tuple[Decision, AgentState]:
-        defectChance = self.genes[0]
+        defect_chance = self.genes[0]
         num_rounds = len(other_agents_decisions)
 
         if num_rounds == 0:
-            return self.weighted_choice(defectChance), self.genes
+            return self.weighted_choice(defect_chance), self.genes
 
         history = [d == Decision.DEFECT for d in other_agents_decisions]
 
         total_defections = sum(history)
         average = np.average(history)
-        weighted_average = np.average(history, weights=np.arange(1, num_rounds + 1) * self.genes[1])
-        recent_defect_window = int(100 * self.genes[2])
-        recent_average = np.average(history[:recent_defect_window])
-        last_defect = history[0]
+        weighted_average_1 = np.average(history, weights=np.arange(1, num_rounds + 1) + self.genes[1])
+        weighted_average_2 = np.average(history, weights=np.arange(1, num_rounds + 1) + self.genes[2])
+        window_1 = max(abs(int(100 * self.genes[3])), 2)
+        window_2 = max(abs(int(100 * self.genes[4])), 2)
+        recent_average_1 = np.average(history[:window_1])
+        recent_average_2 = np.average(history[:window_2])
+        last_defect_1 = history[0]
+        last_defect_2 = 0
+        last_defect_3 = 0
+        last_defect_4 = 0
+        if len(history) > 3:
+            last_defect_4 = history[3]
+        elif len(history) > 2:
+            last_defect_3 = history[2]
+        elif len(history) > 1:
+            last_defect_2 = history[1]
 
-        first_layer = np.array([num_rounds, total_defections, average, weighted_average, recent_average, last_defect])
+        first_layer = np.array([num_rounds, total_defections, average, weighted_average_1, weighted_average_2,
+                                recent_average_1, recent_average_2, last_defect_1, last_defect_2, last_defect_3,
+                                last_defect_4])
 
+        p_count = 5
         def neuron(features, params_offset):
-            value = sum(features * self.genes[params_offset:params_offset + 6])
-            if value > self.genes[params_offset + 6]:
+            value = sum(features * self.genes[params_offset:params_offset + len(features)]) + \
+                    self.genes[params_offset + len(features)]
+
+            if value > 0:
                 return value
             return 0
 
         second_layer = np.array([
-            neuron(first_layer, 3),
-            neuron(first_layer, 9),
-            neuron(first_layer, 15),
-            neuron(first_layer, 21),
-            neuron(first_layer, 27),
-            neuron(first_layer, 33),
+            neuron(first_layer, (i * len(first_layer) + p_count))
+            for i in range(len(first_layer) * 3)
         ])
+        p_count += (len(first_layer) + 1) * len(first_layer) * 3
 
-        defectChance += neuron(first_layer, 3) * self.genes[40]
-        defectChance += neuron(first_layer, 8) * self.genes[41]
-        defectChance += neuron(first_layer, 13) * self.genes[42]
-        defectChance += neuron(first_layer, 18) * self.genes[43]
-        defectChance += neuron(first_layer, 23) * self.genes[44]
-        defectChance += neuron(first_layer, 28) * self.genes[45]
+        third_layer = neuron(second_layer, p_count)
 
-        defectChance += neuron(second_layer, 33) * self.genes[46]
+        p_count += len(second_layer) + 1
 
-        return self.weighted_choice(defectChance), self.genes
+        defect_chance += sum(first_layer * self.genes[p_count:p_count + len(first_layer)])
+        p_count += len(first_layer)
+
+        defect_chance += sum(second_layer * self.genes[p_count:p_count + len(second_layer)])
+        p_count += len(second_layer)
+
+        defect_chance += third_layer * self.genes[p_count]
+        print(p_count, defect_chance)
+
+        # check if defect chance is nan
+        if defect_chance != defect_chance:
+            raise Exception('nan')
+
+        return self.weighted_choice(defect_chance), self.genes
 
 
 def evaluate_agent(name, agent, opponents, expected_number_of_interactions):
@@ -195,8 +217,10 @@ def breed(population, ii, mutation_rate=0.25):
 
 def genetic_algorithm():
     """ Genetic algorithm """
+    output_dir = '/home/nathan/ipd_output/overwork1/'
+
     # Initialize population
-    population = [Nathan((np.random.rand(50) - 0.5), i) for i in range(10)]
+    population = [Nathan((np.random.rand(480) - 0.5), i) for i in range(10)]
 
     best = population[0]
     # Evaluate population
@@ -222,14 +246,14 @@ def genetic_algorithm():
         print('Best name: {}'.format(best.get_name()))
 
         # Save best solution
-        with open('best.json', 'w') as f:
+        with open(output_dir + 'best.json', 'w') as f:
             json.dump(best.genes.tolist(), f)
 
         best_chart.append(best.fitness)
 
         # Save best chart matplotlib
         plt.plot(best_chart)
-        plt.savefig('best_chart.png')
+        plt.savefig(output_dir + 'best_chart.png')
         plt.clf()
 
 
