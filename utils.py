@@ -18,6 +18,9 @@ AgentState = Any
 
 
 class Agent(abc.ABC):
+    def get_name(self):
+        return self.__class__.__name__
+
     @abc.abstractmethod
     def make_decision(
             self,

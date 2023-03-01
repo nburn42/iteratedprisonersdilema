@@ -172,22 +172,69 @@ class GrimTrigger(Agent):
         else:
             return Decision.COOPERATE, None
 
+class EricTheEvil1(Agent):
+  @property
+  def initial_state(self) -> AgentState:
+    return None
 
-class EricTheEvil(Agent):
+  def make_decision(
+      self,
+      other_agents_decisions: Tuple[Decision, ...],
+      previous_state: AgentState,
+  ) -> Tuple[Decision, AgentState]:
+
+    d = sum(int(d==Decision.DEFECT) for d in other_agents_decisions)
+    t = len(other_agents_decisions) or 1
+    r = random.random()
+    return [Decision.COOPERATE, Decision.DEFECT][r < d/t], None
+
+
+class EricTheEvil2(Agent):
+   @property
+   def initial_state(self) -> AgentState:
+     return np.array([0,0])
+
+   def make_decision(
+       self,
+       other_agents_decisions: Tuple[Decision, ...],
+       previous_state: AgentState
+   ) -> Tuple[Decision, AgentState]:
+
+     v0 = [np.array([-3, -5]), np.array([0, -1])]
+     if len(other_agents_decisions):
+       d = other_agents_decisions[-1]
+       previous_state += v0[d != Decision.COOPERATE]
+
+     u = previous_state + v0[random.random() < .5]
+     d = Decision.COOPERATE if u[0] < u[1] else Decision.DEFECT
+     return d, previous_state
+
+
+class EricTheEvil3(Agent):
     @property
     def initial_state(self) -> AgentState:
-        return None
+        return []
 
     def make_decision(
             self,
             other_agents_decisions: Tuple[Decision, ...],
-            previous_state: AgentState,
+            previous_state: AgentState
     ) -> Tuple[Decision, AgentState]:
-        d = sum(int(d == Decision.DEFECT) for d in other_agents_decisions)
-        t = len(other_agents_decisions) + 1
-        r = random.random()
-        return [Decision.COOPERATE, Decision.DEFECT][r < d / t], None
 
+        if len(other_agents_decisions):
+            previous_state[-1].append(other_agents_decisions[-1])
+
+        payoff = [[3, 0], [5, 1]]
+
+        # compute (un-normalized) expected values
+        c, d = 0, 0
+        for (me, them) in previous_state:
+            me, them = me.value, them.value
+            [c, d][me] += payoff[me][them]
+
+        res = Decision.COOPERATE if c >= d else Decision.DEFECT
+        previous_state.append([res])
+        return res, previous_state
 
 class AdvancedPredict(Agent):
     """By Emmett
@@ -408,3 +455,147 @@ class Binomial(Agent):
             my_decision = other_agents_decisions[0]
         current_state = current_state.add_decision(my_decision)
         return my_decision, current_state
+
+
+class TribalPolitician(Agent):
+    """ By Ryan
+        Tries to identify other members of its tribe - then defects against them while going tit for tat against others
+    """
+
+    @property
+    def initial_state(self) -> AgentState:
+        return None
+
+    def make_decision(
+            self,
+            other_agents_decisions: Tuple[Decision, ...],
+            previous_state: AgentState,
+    ) -> Tuple[Decision, AgentState]:
+
+        num_rounds = len(other_agents_decisions)
+
+        if num_rounds == 0:
+            return Decision.COOPERATE, None
+        if num_rounds == 1:
+            return Decision.DEFECT, None
+        if num_rounds == 2:
+            return Decision.COOPERATE, None
+        if num_rounds == 3:
+            return Decision.COOPERATE, None
+
+        othertribal = 0
+        meetingofkings = 0
+        if num_rounds > 3:
+            if other_agents_decisions[-4] == Decision.COOPERATE and other_agents_decisions[-3] == Decision.COOPERATE and \
+                    other_agents_decisions[-2] == Decision.DEFECT and other_agents_decisions[-1] == Decision.COOPERATE:
+                othertribal = 1
+
+        if num_rounds == 4 and othertribal:
+            return Decision.DEFECT, None
+        elif num_rounds == 4:
+            return other_agents_decisions[0], None
+
+        if othertribal and other_agents_decisions[-5] == Decision.DEFECT:
+            meetingofkings = 1
+
+        if othertribal and meetingofkings:
+            return Decision.COOPERATE, None
+        elif othertribal:
+            return Decision.DEFECT, None
+        else:
+            return other_agents_decisions[0], None
+
+
+class TribalCultist(Agent):
+    """ By Ryan
+        Tries to identify other members of its tribe - then cooperates with them while defecting against anyone else
+    """
+
+    @property
+    def initial_state(self) -> AgentState:
+        return None
+
+    def make_decision(
+            self,
+            other_agents_decisions: Tuple[Decision, ...],
+            previous_state: AgentState,
+    ) -> Tuple[Decision, AgentState]:
+
+        num_rounds = len(other_agents_decisions)
+
+        if num_rounds == 0:
+            return Decision.COOPERATE, None
+        if num_rounds == 1:
+            return Decision.DEFECT, None
+        if num_rounds == 2:
+            return Decision.COOPERATE, None
+        if num_rounds == 3:
+            return Decision.COOPERATE, None
+
+        if num_rounds > 3:
+            if other_agents_decisions[-4] == Decision.COOPERATE and other_agents_decisions[-3] == Decision.COOPERATE and \
+                    other_agents_decisions[-2] == Decision.DEFECT and other_agents_decisions[-1] == Decision.COOPERATE:
+                return Decision.COOPERATE, None
+
+            return Decision.DEFECT, None
+
+
+class TribalCheater(Agent):
+    """ By Ryan
+        Tries to identify other members of its tribe - then shows deference to politicians while going tit-for-tat against others (with an added chance of defecting anyways)
+    """
+
+    @property
+    def initial_state(self) -> AgentState:
+        return None
+
+    def make_decision(
+            self,
+            other_agents_decisions: Tuple[Decision, ...],
+            previous_state: AgentState,
+    ) -> Tuple[Decision, AgentState]:
+
+        num_rounds = len(other_agents_decisions)
+
+        if num_rounds == 0:
+            return Decision.COOPERATE, None
+        if num_rounds == 1:
+            return Decision.DEFECT, None
+        if num_rounds == 2:
+            return Decision.COOPERATE, None
+        if num_rounds == 3:
+            return Decision.COOPERATE, None
+
+        othertribal = 0
+        if num_rounds > 3:
+            if other_agents_decisions[-4] == Decision.COOPERATE and other_agents_decisions[-3] == Decision.COOPERATE and \
+                    other_agents_decisions[-2] == Decision.DEFECT and other_agents_decisions[-1] == Decision.COOPERATE:
+                othertribal = 1
+
+        if num_rounds > 3 and othertribal:
+            return Decision.COOPERATE, None
+        else:
+            if random.random() < .1:
+                return Decision.DEFECT, None
+            else:
+                return other_agents_decisions[0], None
+
+class Konstantin(Agent):
+  """ By Konstantin, Implementation by Adam
+      Description: Cooperates on the first move, and defects if the opponent has defects on any of the previous three moves, else cooperates.
+  """
+  @property
+  def initial_state(self) -> AgentState:
+    return None
+
+  def make_decision(
+      self,
+      other_agents_decisions: Tuple[Decision, ...],
+      previous_state: AgentState,
+  ) -> Tuple[Decision, AgentState]:
+    if not other_agents_decisions: #if it's the first round
+      return Decision.COOPERATE, None
+    elif any([d == Decision.DEFECT for d in other_agents_decisions[:3]]): #if villain has defected in the last 3 rounds
+      return Decision.DEFECT, None
+    else: #otherwise
+      return Decision.COOPERATE, None

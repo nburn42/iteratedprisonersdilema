@@ -22,7 +22,7 @@ import pandas as pd
 
 from NathanExploit import NathanExploit
 from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
-    EricTheEvil, TitForTwoTats, GrimTrigger, Stephanie
+    TitForTwoTats, GrimTrigger, Stephanie
 from utils import play_iterated_prisoners_dilemma
 
 
