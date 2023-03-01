@@ -121,7 +121,7 @@ def evaluate_population(population, expected_number_of_interactions, best_agent,
 
     opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
                PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
-               Stephanie(), best_agent]
+               Stephanie(), best_agent, all_time_best_agent]
     opponent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
                    'Forgiver', 'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie',
                    best_agent.get_name() + ' best', all_time_best_agent.get_name() + ' all time best']
@@ -130,25 +130,6 @@ def evaluate_population(population, expected_number_of_interactions, best_agent,
         results = pool.starmap(evaluate_agent,
                                [(name, agent, opponents, expected_number_of_interactions) for agent, name in
                                 zip(agents + opponents, agent_names + opponent_names)])
-
-    agg_results = []
-
-    # results = []
-
-    # for first_agent, agent_name in zip(agents, agent_names):
-    #     results.append([])
-    #     agg_results.append([agent_name, 0])
-    #     # if "Nathan" not in agent_name:
-    #     #     continue
-    #     for opponent in agents:
-    #         match = play_iterated_prisoners_dilemma(
-    #             agent_1=first_agent,
-    #             agent_2=opponent,
-    #             expeted_number_of_interactions=expected_number_of_interactions,
-    #         )
-    #         results[-1].append(match)
-    #         agg_results[-1][1] = agg_results[-1][1] + results[-1][-1][0]
-    #     agg_results[-1][1] = round(agg_results[-1][1], 2)
 
     agg_results = []
     for i, agent_name in enumerate(agent_names + opponent_names):
