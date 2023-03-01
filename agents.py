@@ -316,7 +316,7 @@ class PatternMatcher(Agent):
 
     @property
     def initial_state(self) -> AgentState:
-        return None
+        return []
 
     def make_decision(
             self,

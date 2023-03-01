@@ -22,19 +22,17 @@ import pandas as pd
 
 from NathanExploit import NathanExploit
 from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
-    TitForTwoTats, GrimTrigger, Stephanie
+    TitForTwoTats, GrimTrigger, Stephanie, EricTheEvil3
 from utils import play_iterated_prisoners_dilemma
 
 
 if __name__ == '__main__':
 
     agents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
-              PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
+              PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil3(), TitForTwoTats(), GrimTrigger(),
               Stephanie(), NathanExploit()]
     num_agents = len(agents)
-    agent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
-                   'Forgiver',
-                   'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie', 'NathanExploit']
+    agent_names = [agent.get_name() for agent in agents]
     results = []
     agg_results = []
 
