@@ -90,12 +90,12 @@ class NathanGenetic(Agent):
         p_count = 11
 
         def neuron(features, params_offset):
-            value = sum(features * self.genes[params_offset:params_offset + len(features)]) + \
-                    self.genes[params_offset + len(features)]
-
-            if value > 0:
-                return value
-            return 0
+            try:
+                value = sum(features * self.genes[params_offset:params_offset + len(features)]) + \
+                        self.genes[params_offset + len(features)]
+                return max(value, 0)
+            except:
+                return 0
 
         second_layer = np.array([
             neuron(first_layer, (i * len(first_layer) + p_count))
