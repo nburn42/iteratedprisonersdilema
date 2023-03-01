@@ -1,3 +1,5 @@
+import json
+import os
 import random
 from typing import Tuple
 
@@ -11,7 +13,14 @@ class NathanGenetic(Agent):
         # numpy array of 50 genes
         self.genes = genes
         if self.genes is None:
-            self.genes = (np.random.rand(838) - 0.5)
+            # check if genes are in file
+            filename = '/home/nathan/ipd_output/night1/all_time_best_59.79.json'
+            if os.path.isfile(filename):
+                with open(filename, 'r') as f:
+                    data = json.load(f)
+                    self.genes = np.array(data['genes'])
+            else:
+                self.genes = (np.random.rand(838) - 0.5)
 
         self.number = str(number)
         self.fitness = fitness

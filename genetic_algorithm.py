@@ -27,16 +27,14 @@ def evaluate_agent(agent, opponents, expected_number_of_interactions):
 
 def evaluate_population(agents, expected_number_of_interactions, best_agent, all_time_best_agent, self_play):
     """ Evaluate population """
-    if not self_play:
-        opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(),
-                     PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil1(), EricTheEvil2(), EricTheEvil3(),
-                     TitForTwoTats(), GrimTrigger(), Stephanie(), TribalPolitician(), TribalCultist(),
-                     TribalCheater(), Konstantin(), best_agent, all_time_best_agent]
-        opponent_names = [opponent.get_name() for opponent in opponents]
-        players = agents + opponents
-    else:
-        opponents = agents
-        players = agents
+    opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(),
+                 PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil1(), EricTheEvil2(), EricTheEvil3(),
+                 TitForTwoTats(), GrimTrigger(), Stephanie(), TribalPolitician(), TribalCultist(),
+                 TribalCheater(), Konstantin(), best_agent, all_time_best_agent]
+    players = agents + opponents
+    if self_play:
+        opponents += agents
+
 
     with multiprocessing.Pool() as pool:
         results = pool.starmap(evaluate_agent,
@@ -104,11 +102,11 @@ def breed(population, ii, mutation_rate=0.25):
 
 def genetic_algorithm(self_play=False):
     """ Genetic algorithm """
-    output_dir = '/home/nathan/ipd_output/night1/'
+    output_dir = '/home/nathan/ipd_output/self_play_3/'
     # output_dir = '/home/nburn42/ipd_output/self_play/'
 
     # Initialize population
-    population = [NathanGenetic(None, i) for i in range(5000)]
+    population = [NathanGenetic(None, i) for i in range(10)]
 
     best = TitForTat()
     all_time_best = TitForTat()
@@ -158,4 +156,4 @@ def genetic_algorithm(self_play=False):
 
 
 if __name__ == '__main__':
-    genetic_algorithm()
+    genetic_algorithm(self_play=True)
