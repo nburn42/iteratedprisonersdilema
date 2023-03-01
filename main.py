@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import pandas as pd
 
+from NathanExploit import NathanExploit
 from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
     EricTheEvil, TitForTwoTats, GrimTrigger, Stephanie
-from jennifer import Jennifer
 from utils import play_iterated_prisoners_dilemma
 
 
@@ -30,11 +30,11 @@ if __name__ == '__main__':
 
     agents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(), AdvancedPredict(),
               PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil(), TitForTwoTats(), GrimTrigger(),
-              Stephanie(), Jennifer()]
+              Stephanie(), NathanExploit()]
     num_agents = len(agents)
     agent_names = ['TitForTat', 'Mac', 'Cynic', 'Random', 'Rube', 'Troll', 'Binomial', 'Advanced', 'Matcher',
                    'Forgiver',
-                   'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie', 'Jennifer']
+                   'AdvancedPredict', 'EricTheEvil', 'TitForTwoTats', 'GrimTrigger', 'Stephanie', 'NathanExploit']
     results = []
     agg_results = []
 
@@ -52,20 +52,16 @@ if __name__ == '__main__':
     print(results)
     print(*sorted(agg_results, key=lambda x: x[1], reverse=True), sep='\n')
     df = pd.DataFrame(results, columns=agent_names, index=agent_names)
-    df
+    print(df)
 
-    play_iterated_prisoners_dilemma(
-        agent_1=TitForTat(),
+    print(play_iterated_prisoners_dilemma(
+        agent_1=NathanExploit(),
         agent_2=Random(random_seed=1),
-    )
+    ))
 
-    play_iterated_prisoners_dilemma(
-        agent_1=TitForTat(),
+    print(play_iterated_prisoners_dilemma(
+        agent_1=NathanExploit(),
         agent_2=TitForTat(),
-    )
+    ))
 
-    play_iterated_prisoners_dilemma(
-        agent_1=TitForTat(),
-        agent_2=Random(random_seed=0),
-    )
 
