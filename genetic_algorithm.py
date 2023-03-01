@@ -25,13 +25,13 @@ def evaluate_agent(agent, opponents, expected_number_of_interactions):
     return (agent.get_name(), sum([result[0] for result in results]))
 
 
-def evaluate_population(agents, expected_number_of_interactions, best_agent, all_time_best_agent, test_opponents = True):
+def evaluate_population(agents, expected_number_of_interactions, best_agent, all_time_best_agent, self_play):
     """ Evaluate population """
-    if test_opponents:
+    if not self_play:
         opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(),
-                 PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil1(), EricTheEvil2(), EricTheEvil3(),
-                 TitForTwoTats(), GrimTrigger(), Stephanie(), TribalPolitician(), TribalCultist(),
-                 TribalCheater(), Konstantin(), best_agent, all_time_best_agent]
+                     PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil1(), EricTheEvil2(), EricTheEvil3(),
+                     TitForTwoTats(), GrimTrigger(), Stephanie(), TribalPolitician(), TribalCultist(),
+                     TribalCheater(), Konstantin(), best_agent, all_time_best_agent]
         opponent_names = [opponent.get_name() for opponent in opponents]
         players = agents + opponents
     else:
@@ -102,9 +102,10 @@ def breed(population, ii, mutation_rate=0.25):
     return next_generation
 
 
-def genetic_algorithm():
+def genetic_algorithm(self_play=False):
     """ Genetic algorithm """
     output_dir = '/home/nathan/ipd_output/night1/'
+    # output_dir = '/home/nburn42/ipd_output/self_play/'
 
     # Initialize population
     population = [NathanGenetic(None, i) for i in range(5000)]
@@ -112,7 +113,7 @@ def genetic_algorithm():
     best = TitForTat()
     all_time_best = TitForTat()
     all_time_best_fitness = 0
-    evaluate_population(population, 50, best, all_time_best)
+    evaluate_population(population, 50, best, all_time_best, self_play)
 
     best_chart = []
 
@@ -123,10 +124,10 @@ def genetic_algorithm():
         # Breed next generation
         population = breed(population, ii)
         # Evaluate population
-        evaluate_population(population, (500.0 * random.random()) + 50, best, all_time_best)
+        evaluate_population(population, (500.0 * random.random()) + 50, best, all_time_best, self_play)
 
         best = max(population, key=lambda x: x.fitness)
-        best.number += 'B'
+        best = NathanGenetic(best.genes, best.number + 'B', fitness=best.fitness)
 
         print('Generation: {}'.format(ii))
         print('Best fitness: {}'.format(best.fitness))
@@ -138,8 +139,7 @@ def genetic_algorithm():
             json.dump(best.genes.tolist(), f)
 
         if best.fitness > all_time_best_fitness:
-            all_time_best = best
-            all_time_best.number += 'AT'
+            all_time_best = NathanGenetic(best.genes, best.number + 'AT', fitness=best.fitness)
             all_time_best_fitness = best.fitness
             with open(output_dir + f'all_time_best_{all_time_best_fitness}.json', 'w') as f:
                 json.dump({
@@ -149,7 +149,7 @@ def genetic_algorithm():
                     'time': str(datetime.now()).replace(' ', '_').replace(':', '-').replace('.', '-')
                 }, f)
 
-        best_chart.append(best.fitness)
+        best_chart.append((best.fitness, all_time_best_fitness))
 
         # Save best chart matplotlib
         plt.plot(best_chart)

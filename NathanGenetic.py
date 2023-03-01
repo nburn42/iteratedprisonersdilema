@@ -7,14 +7,14 @@ from utils import Agent, AgentState, Decision
 
 
 class NathanGenetic(Agent):
-    def __init__(self, genes, number):
+    def __init__(self, genes, number, fitness=-1):
         # numpy array of 50 genes
         self.genes = genes
         if self.genes is None:
             self.genes = (np.random.rand(838) - 0.5)
 
         self.number = str(number)
-        self.fitness = -1
+        self.fitness = fitness
 
     def get_name(self):
         return 'Nathan ' + str(self.number)
