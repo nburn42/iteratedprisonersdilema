@@ -599,3 +599,50 @@ class Konstantin(Agent):
       return Decision.DEFECT, None
     else: #otherwise
       return Decision.COOPERATE, None
+
+
+class Vishal(Agent):
+  """
+      Adaptive Pavlov
+  """
+  @property
+  def initial_state(self) -> AgentState:
+    return "" # Opponent Class
+
+  def make_decision(
+      self,
+      other_agents_decisions: Tuple[Decision, ...],
+      previous_state: AgentState,
+  ) -> Tuple[Decision, AgentState]:
+        num_rounds = len(other_agents_decisions)
+
+        # TFT for six rounds
+        if num_rounds == 0:
+          return Decision.COOPERATE, ""
+        if num_rounds < 6:
+            return other_agents_decisions[0], ""
+
+        opponent_class = previous_state
+
+        if num_rounds % 6 == 0:
+            # Classify opponent
+            if other_agents_decisions[:5] == [Decision.COOPERATE] * 6:
+                opponent_class = "Cooperative"
+            if other_agents_decisions[:5].count(Decision.DEFECT) >= 4:
+                opponent_class = "ALLD"
+            if other_agents_decisions[:5].count(Decision.DEFECT) == 3:
+                opponent_class = "STFT"
+            if opponent_class == "":
+                opponent_class = "Random"
+        # Play according to classification
+        if opponent_class in ["Random", "ALLD"]:
+            return Decision.DEFECT, opponent_class
+        if opponent_class == "STFT":
+            # TFTT
+            if other_agents_decisions[:2] == [Decision.DEFECT] * 2:
+              return Decision.DEFECT, opponent_class
+            else:
+              return Decision.COOPERATE, opponent_class
+        if self.opponent_class == "Cooperative":
+            # TFT
+            return other_agents_decisions[0], opponent_class

@@ -6,10 +6,11 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
+from NathanExploit import NathanSelfPlay
 from NathanGenetic import NathanGenetic
 from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
     TitForTwoTats, GrimTrigger, Stephanie, Konstantin, TribalPolitician, EricTheEvil1, EricTheEvil2, TribalCultist, \
-    TribalCheater, EricTheEvil3
+    TribalCheater, EricTheEvil3, Vishal
 from utils import play_iterated_prisoners_dilemma
 
 
@@ -30,7 +31,7 @@ def evaluate_population(agents, expected_number_of_interactions, best_agent, all
     opponents = [TitForTat(), Mac(), Cynic(), Random(random_seed=1), Rube(), Troll(), Binomial(),
                  PatternMatcher(), IForgiveYou(), AdvancedPredict(), EricTheEvil1(), EricTheEvil2(), EricTheEvil3(),
                  TitForTwoTats(), GrimTrigger(), Stephanie(), TribalPolitician(), TribalCultist(),
-                 TribalCheater(), Konstantin(), best_agent, all_time_best_agent]
+                 TribalCheater(), Konstantin(), Vishal(), NathanSelfPlay(), best_agent, all_time_best_agent]
     players = agents + opponents
     if self_play:
         opponents += agents
@@ -77,7 +78,7 @@ def select(population):
     return winners
 
 
-def breed(population, ii, mutation_rate=0.25):
+def breed(population, ii, mutation_rate=0.05):
     """ Breed next generation """
     # Initialize next generation
     next_generation = []
@@ -102,7 +103,7 @@ def breed(population, ii, mutation_rate=0.25):
 
 def genetic_algorithm(self_play=False):
     """ Genetic algorithm """
-    output_dir = '/home/nathan/ipd_output/self_play_3/'
+    output_dir = '/home/nathan/ipd_output/got_to_beat_vishal/'
     # output_dir = '/home/nburn42/ipd_output/self_play/'
 
     # Initialize population
@@ -156,4 +157,4 @@ def genetic_algorithm(self_play=False):
 
 
 if __name__ == '__main__':
-    genetic_algorithm(self_play=True)
+    genetic_algorithm(self_play=False)

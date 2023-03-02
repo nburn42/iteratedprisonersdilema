@@ -15,6 +15,7 @@ class NathanGenetic(Agent):
         if self.genes is None:
             # check if genes are in file
             filename = '/home/nathan/ipd_output/night1/all_time_best_59.79.json'
+            # filename = '/home/nathan/iteratedprisonersdilema/ipd_output/overwork3/all_time_best_50.32.json'
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     data = json.load(f)
