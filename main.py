@@ -17,14 +17,16 @@ starlog
 
 from __future__ import annotations
 
+import itertools
+import json
 
+import numpy as np
 import pandas as pd
 
 from NathanExploit import NathanExploit
 from agents import TitForTat, Mac, Cynic, Random, Rube, Troll, Binomial, AdvancedPredict, PatternMatcher, IForgiveYou, \
     TitForTwoTats, GrimTrigger, Stephanie, EricTheEvil3
-from utils import play_iterated_prisoners_dilemma
-
+from utils import play_iterated_prisoners_dilemma, faceoff_iterated_prisoners_dilemma, contest_to_frames
 
 if __name__ == '__main__':
 
@@ -62,4 +64,24 @@ if __name__ == '__main__':
         agent_2=TitForTat(),
     ))
 
+    sorted_pairs = [sorted(pair, key=lambda agent: agent.__class__.__name__) for pair in
+                    itertools.combinations_with_replacement(agents, 2)]
 
+    pair_results = [
+        (
+            sorted_pair,
+            faceoff_iterated_prisoners_dilemma(
+                agent_1=sorted_pair[0],
+                agent_2=sorted_pair[1],
+                expeted_number_of_interactions=200,
+                rng=np.random.default_rng(idx),
+            )
+        )
+        for idx, sorted_pair in enumerate(sorted_pairs)
+    ]
+
+    frames = contest_to_frames(pair_results)
+
+    # save to json
+    with open('results.json', 'w') as f:
+        json.dump([frame.to_json() for frame in frames], f)

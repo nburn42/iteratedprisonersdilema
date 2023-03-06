@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+        .bar {
+            height: 20px;
+            width: 100px;
+            background-color: blue;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+<div id="chart"></div>
+<script>
+    $(document).ready(function () {
+        $.getJSON("results.json", function (data) {
+            var chart = d3.select("#chart");
+            console.log(data.length)
+            console.log(data[0])
+            const example = data[0]
+            // string to dict
+            const example_dict = JSON.parse(example)
+            console.log(example_dict.agent_scores)
+            chart.selectAll("div")
+                .data(JSON.parse(data[0]).agent_scores)
+                .enter()
+                .append("div")
+                .attr("class", "bar")
+                .style("width", function (d) {
+                    return d * 10 + "px";
+                })
+                .text(function (d) {
+                    return d;
+                });
+        });
+    });
+</script>
+</body>
+</html>
